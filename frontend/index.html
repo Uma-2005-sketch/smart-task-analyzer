@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Task Analyzer</title>
+    <link rel="stylesheet" href="/static/styles.css">
+    <script src="/static/script.js"></script>
+    
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎯 Smart Task Analyzer</h1>
+            <p>Intelligently prioritize your tasks with advanced AI-powered analysis</p>
+        </header>
+
+        <!-- Navigation Tabs -->
+        <div class="tabs">
+            <button class="tab-button active" onclick="showTab('analyzer')">Task Analyzer</button>
+            <button class="tab-button" onclick="showTab('eisenhower')">Eisenhower Matrix</button>
+            <button class="tab-button" onclick="showTab('dependencies')">Dependency Graph</button>
+            <button class="tab-button" onclick="showTab('insights')">AI Insights</button>
+        </div>
+
+        <!-- Tab 1: Main Task Analyzer -->
+        <div id="analyzer" class="tab-content active">
+            <!-- Strategy Selector -->
+            <div class="strategy-section">
+                <label for="strategy">Sorting Strategy:</label>
+                <select id="strategy">
+                    <option value="smart_balance">Smart Balance</option>
+                    <option value="fastest_wins">Fastest Wins</option>
+                    <option value="high_impact">High Impact</option>
+                    <option value="deadline_driven">Deadline Driven</option>
+                </select>
+            </div>
+
+            <!-- Input Section -->
+            <div class="input-section">
+                <h2>📝 Add Tasks</h2>
+                
+                <!-- Single Task Form -->
+                <div class="task-form">
+                    <input type="text" id="taskTitle" placeholder="Task title" required>
+                    <input type="date" id="taskDueDate" required>
+                    <input type="number" id="taskHours" placeholder="Estimated hours" min="0.5" step="0.5" required>
+                    <input type="number" id="taskImportance" placeholder="Importance (1-10)" min="1" max="10" required>
+                    <input type="text" id="taskDependencies" placeholder="Dependencies (comma-separated IDs)">
+                    <button onclick="addTask()">Add Task</button>
+                </div>
+
+                <!-- Bulk Input -->
+                <div class="bulk-input">
+                    <h3>Or paste JSON array:</h3>
+                    <textarea id="jsonInput" placeholder='[{"title": "Task 1", "due_date": "2025-12-01", "estimated_hours": 2, "importance": 8, "dependencies": []}]'></textarea>
+                    <button onclick="loadJSONTasks()">Load JSON Tasks</button>
+                </div>
+
+                <!-- Current Tasks -->
+                <div class="current-tasks">
+                    <h3>Current Tasks (<span id="taskCount">0</span>)</h3>
+                    <div id="taskList" class="task-list"></div>
+                    <button onclick="analyzeTasks()" class="analyze-btn">🚀 Analyze Tasks</button>
+                    <button onclick="getSuggestions()" class="suggest-btn">💡 Get Suggestions</button>
+                    <button onclick="clearTasks()" class="clear-btn">🗑️ Clear All</button>
+                </div>
+            </div>
+
+            <!-- Output Section -->
+            <div class="output-section">
+                <h2>📊 Analysis Results</h2>
+                <div id="loading" class="loading hidden">Analyzing tasks...</div>
+                <div id="error" class="error hidden"></div>
+                
+                <!-- Suggested Tasks -->
+                <div id="suggestions" class="suggestions hidden">
+                    <h3>🎯 Top 3 Suggestions for Today</h3>
+                    <div id="suggestionList"></div>
+                </div>
+
+                <!-- Analyzed Tasks -->
+                <div id="results" class="results hidden">
+                    <h3>📈 Prioritized Tasks</h3>
+                    <div id="resultList" class="result-list"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 2: Eisenhower Matrix -->
+        <div id="eisenhower" class="tab-content">
+            <div class="matrix-container">
+                <h2>🎯 Eisenhower Matrix</h2>
+                <p class="matrix-description">Organize tasks by urgency and importance to maximize productivity</p>
+                
+                <div class="matrix-grid">
+                    <div class="quadrant quadrant-1">
+                        <h3>🚨 DO FIRST</h3>
+                        <p>Urgent & Important</p>
+                        <div id="quadrant-do-first" class="quadrant-tasks"></div>
+                    </div>
+                    
+                    <div class="quadrant quadrant-2">
+                        <h3>📅 SCHEDULE</h3>
+                        <p>Important & Not Urgent</p>
+                        <div id="quadrant-schedule" class="quadrant-tasks"></div>
+                    </div>
+                    
+                    <div class="quadrant quadrant-3">
+                        <h3>➡️ DELEGATE</h3>
+                        <p>Urgent & Not Important</p>
+                        <div id="quadrant-delegate" class="quadrant-tasks"></div>
+                    </div>
+                    
+                    <div class="quadrant quadrant-4">
+                        <h3>🗑️ ELIMINATE</h3>
+                        <p>Not Urgent & Not Important</p>
+                        <div id="quadrant-eliminate" class="quadrant-tasks"></div>
+                    </div>
+                </div>
+                
+                <button onclick="loadEisenhowerMatrix()" class="analyze-btn">Generate Matrix</button>
+            </div>
+        </div>
+
+        <!-- Tab 3: Dependency Graph -->
+        <div id="dependencies" class="tab-content">
+            <div class="graph-container">
+                <h2>🕸️ Task Dependency Graph</h2>
+                <p>Visualize task dependencies and detect circular references</p>
+                
+                <div class="graph-controls">
+                    <button onclick="generateDependencyGraph()" class="analyze-btn">Generate Graph</button>
+                    <button onclick="clearGraph()" class="clear-btn">Clear Graph</button>
+                </div>
+                
+                <div id="graph-info" class="graph-info hidden">
+                    <div id="circular-warning" class="warning hidden">
+                        ⚠️ Circular dependencies detected!
+                    </div>
+                    <div id="graph-stats"></div>
+                </div>
+                
+                <div id="dependency-graph" class="dependency-graph"></div>
+            </div>
+        </div>
+
+        <!-- Tab 4: AI Insights -->
+        <div id="insights" class="tab-content">
+            <div class="insights-container">
+                <h2>🤖 AI Productivity Insights</h2>
+                
+                <div class="insights-grid">
+                    <div class="insight-card">
+                        <h3>📊 Workload Analysis</h3>
+                        <div id="workload-metrics" class="insight-content">
+                            <p>Add tasks to see workload analysis</p>
+                        </div>
+                    </div>
+                    
+                    <div class="insight-card">
+                        <h3>⏰ Time Optimization</h3>
+                        <div id="time-optimization" class="insight-content">
+                            <p>Get suggestions for time management</p>
+                        </div>
+                    </div>
+                    
+                    <div class="insight-card">
+                        <h3>🎯 Focus Recommendations</h3>
+                        <div id="focus-recommendations" class="insight-content">
+                            <p>Receive personalized focus recommendations</p>
+                        </div>
+                    </div>
+                    
+                    <div class="insight-card">
+                        <h3>📈 Productivity Trends</h3>
+                        <div id="productivity-trends" class="insight-content">
+                            <p>Analyze your productivity patterns</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <button onclick="generateInsights()" class="analyze-btn">Generate Insights</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
